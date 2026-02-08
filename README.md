@@ -11,6 +11,9 @@ Each blog post has its own directory containing:
 
 ## Blog Posts
 
+### 2026
+- **Feb 7** - [The Importance of pre-commit Hooks](./pre-commit)
+
 ### 2025
 - **29 Nov** - [Notes on ripgrep and fd](./ripgrep-fd-notes)
 - **20 Sep** - [Exploring Feature Stores with Apache Iceberg](./feature-stores-iceberg)
