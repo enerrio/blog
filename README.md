@@ -12,6 +12,8 @@ Each blog post has its own directory containing:
 ## Blog Posts
 
 ### 2026
+- **Mar 22** - [The Lottery Ticket Hypothesis](./lottery-ticket-hypothesis/)
+- **Feb 22** - [Dispatch from the Frontier - Adventures in AI Engineering](./dispatch-from-frontier/)
 - **Feb 7** - [The Importance of pre-commit Hooks](./pre-commit)
 
 ### 2025
