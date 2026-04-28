@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Softmax gain explorer</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f4f3ee;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --border: rgba(0, 0, 0, 0.08);
+    --bar-track: #ecebe5;
+    --bar-input: #b4b2a9;
+    --bar-input-winner: #5f5e5a;
+    --bar-output: #afa9ec;
+    --bar-output-winner: #534ab7;
+    --c-info: #185fa5;
+    --c-warning: #854f0b;
+    --c-danger: #a32d2d;
+    --c-success: #3b6d11;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-serif: ui-serif, "Iowan Old Style", "Apple Garamond", Baskerville, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+      --surface: #262626;
+      --text: #f0f0f0;
+      --text-muted: #a0a0a0;
+      --border: rgba(255, 255, 255, 0.1);
+      --bar-track: #2e2e2e;
+      --bar-input: #5f5e5a;
+      --bar-input-winner: #b4b2a9;
+      --bar-output: #534ab7;
+      --bar-output-winner: #afa9ec;
+      --c-info: #85b7eb;
+      --c-warning: #fac775;
+      --c-danger: #f09595;
+      --c-success: #c0dd97;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .equation {
+    background: var(--surface);
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-family: var(--font-serif);
+    font-size: 19px;
+    line-height: 1;
+    overflow-x: auto;
+  }
+  .eq-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    vertical-align: middle;
+  }
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+  }
+  .frac .num {
+    border-bottom: 1px solid var(--text);
+    padding: 0 10px 4px;
+  }
+  .frac .den {
+    padding: 4px 10px 0;
+  }
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.25rem;
+  }
+  .control-row label {
+    font-size: 14px;
+    color: var(--text-muted);
+    min-width: 80px;
+  }
+  .control-row .readout {
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 64px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--bar-track);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--text);
+    cursor: pointer;
+    border: none;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--text);
+    cursor: pointer;
+    border: none;
+  }
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.75rem;
+  }
+  .metric {
+    background: var(--surface);
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+  }
+  .metric .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .metric .value {
+    font-size: 20px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric .value.text {
+    font-size: 16px;
+    padding-top: 4px;
+  }
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 1.25rem;
+    min-width: 0;
+  }
+  .chart-col { min-width: 0; }
+  .chart-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .bar-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    min-width: 32px;
+  }
+  .bar-track {
+    flex: 1;
+    height: 18px;
+    background: var(--bar-track);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-width: 0;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: var(--radius-md);
+    transition: width 0.08s ease;
+  }
+  .bar-value {
+    font-size: 12px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .bar-value.input { min-width: 36px; }
+  .bar-value.output { min-width: 44px; }
+  .button-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  button {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--text);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    white-space: nowrap;
+  }
+  button:hover { background: var(--surface); }
+  button:active { transform: scale(0.98); }
+  @media (max-width: 560px) {
+    .metrics { grid-template-columns: 1fr; }
+    .charts { grid-template-columns: 1fr; gap: 16px; }
+    .equation { font-size: 16px; }
+    button { font-size: 12px; padding: 6px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="equation">
+  <span class="eq-row">
+    <span>y<sub style="font-size: 0.7em;">k</sub></span>
+    <span style="font-size: 22px;">=</span>
+    <span class="frac">
+      <span class="num">b<sup style="font-size: 0.7em;">u<sub style="font-size: 0.8em;">k</sub></sup></span>
+      <span class="den">&Sigma;<sub style="font-size: 0.7em;">l</sub> b<sup style="font-size: 0.7em;">u<sub style="font-size: 0.8em;">l</sub></sup></span>
+    </span>
+    <span style="font-size: 22px;">=</span>
+    <span class="frac">
+      <span class="num">e<sup style="font-size: 0.7em;">u<sub style="font-size: 0.8em;">k</sub>/&tau;</sup></span>
+      <span class="den">&Sigma;<sub style="font-size: 0.7em;">l</sub> e<sup style="font-size: 0.7em;">u<sub style="font-size: 0.8em;">l</sub>/&tau;</sup></span>
+    </span>
+  </span>
+</div>
+
+<div class="control-row">
+  <label for="logb">gain b</label>
+  <input type="range" min="0.04" max="3" step="0.01" value="0.434" id="logb">
+  <span class="readout" id="b-out">2.72</span>
+</div>
+
+<div class="metrics">
+  <div class="metric">
+    <div class="label">equivalent &tau; = 1/ln b</div>
+    <div class="value" id="tau-out">1.00</div>
+  </div>
+  <div class="metric">
+    <div class="label">winner share</div>
+    <div class="value" id="winner-out">42%</div>
+  </div>
+  <div class="metric">
+    <div class="label">regime</div>
+    <div class="value text" id="behavior">balanced</div>
+  </div>
+</div>
+
+<div class="charts">
+  <div class="chart-col">
+    <div class="chart-title">input logits u<sub>k</sub></div>
+    <div id="input-bars"></div>
+  </div>
+  <div class="chart-col">
+    <div class="chart-title">output probabilities y<sub>k</sub></div>
+    <div id="output-bars"></div>
+  </div>
+</div>
+
+<div class="button-row">
+  <button onclick="setPreset('sorted')">sorted gradient</button>
+  <button onclick="setPreset('twotied')">two near-tied</button>
+  <button onclick="setPreset('flat')">nearly equal</button>
+  <button onclick="shuffleInputs()">randomize</button>
+</div>
+
+<div class="button-row">
+  <button onclick="setLogB(0.04)">b &rarr; 1 (no gain)</button>
+  <button onclick="setLogB(0.434)">b = e (standard)</button>
+  <button onclick="setLogB(3)">b &rarr; &infin; (WTA)</button>
+</div>
+
+<script>
+let logits = [3.0, 2.4, 1.8, 1.2, 0.6];
+const labels = ['k=1', 'k=2', 'k=3', 'k=4', 'k=5'];
+
+function softmaxFromB(u, b) {
+  const lnb = Math.log(b);
+  const max = Math.max(...u);
+  const exp = u.map(v => Math.exp((v - max) * lnb));
+  const sum = exp.reduce((a, c) => a + c, 0);
+  return exp.map(v => v / sum);
+}
+
+function fmtB(b) {
+  if (b > 1e6) return '> 10\u2076';
+  if (b >= 100) return Math.round(b).toLocaleString();
+  if (b >= 10) return b.toFixed(1);
+  return b.toFixed(2);
+}
+
+function fmtTau(tau) {
+  if (!isFinite(tau) || tau > 1000) return '\u2192 \u221e';
+  if (tau >= 100) return Math.round(tau).toString();
+  if (tau >= 10) return tau.toFixed(1);
+  return tau.toFixed(2);
+}
+
+function render() {
+  const logb = parseFloat(document.getElementById('logb').value);
+  const b = Math.pow(10, logb);
+  const lnb = Math.log(b);
+  const tau = lnb > 1e-9 ? 1 / lnb : Infinity;
+
+  document.getElementById('b-out').textContent = fmtB(b);
+  document.getElementById('tau-out').textContent = fmtTau(tau);
+
+  const probs = softmaxFromB(logits, b);
+  const winnerIdx = probs.indexOf(Math.max(...probs));
+  const maxP = probs[winnerIdx];
+  document.getElementById('winner-out').textContent = (maxP * 100).toFixed(1) + '%';
+
+  const maxLogit = Math.max(...logits);
+  const minLogit = Math.min(0, ...logits);
+  const range = Math.max(0.01, maxLogit - minLogit);
+
+  const styles = getComputedStyle(document.documentElement);
+  const inputColor = styles.getPropertyValue('--bar-input').trim();
+  const inputWinnerColor = styles.getPropertyValue('--bar-input-winner').trim();
+  const outputColor = styles.getPropertyValue('--bar-output').trim();
+  const outputWinnerColor = styles.getPropertyValue('--bar-output-winner').trim();
+
+  const inputHtml = logits.map((u, i) => {
+    const widthPct = ((u - minLogit) / range) * 100;
+    const isWinner = i === winnerIdx;
+    const fill = isWinner ? inputWinnerColor : inputColor;
+    return '<div class="bar-row">' +
+      '<div class="bar-label">' + labels[i] + '</div>' +
+      '<div class="bar-track">' +
+      '<div class="bar-fill" style="width: ' + widthPct.toFixed(1) + '%; background: ' + fill + ';"></div>' +
+      '</div>' +
+      '<div class="bar-value input">' + u.toFixed(2) + '</div>' +
+      '</div>';
+  }).join('');
+  document.getElementById('input-bars').innerHTML = inputHtml;
+
+  const outputHtml = probs.map((p, i) => {
+    const widthPct = p * 100;
+    const isWinner = i === winnerIdx;
+    const fill = isWinner ? outputWinnerColor : outputColor;
+    return '<div class="bar-row">' +
+      '<div class="bar-label">' + labels[i] + '</div>' +
+      '<div class="bar-track">' +
+      '<div class="bar-fill" style="width: ' + widthPct.toFixed(1) + '%; background: ' + fill + ';"></div>' +
+      '</div>' +
+      '<div class="bar-value output">' + (p * 100).toFixed(1) + '%</div>' +
+      '</div>';
+  }).join('');
+  document.getElementById('output-bars').innerHTML = outputHtml;
+
+  let behaviorText, behaviorColor;
+  if (maxP > 0.95) { behaviorText = 'winner-take-all'; behaviorColor = styles.getPropertyValue('--c-danger').trim(); }
+  else if (maxP > 0.55) { behaviorText = 'sharp / high gain'; behaviorColor = styles.getPropertyValue('--c-warning').trim(); }
+  else if (maxP > 0.28) { behaviorText = 'balanced'; behaviorColor = styles.getPropertyValue('--c-info').trim(); }
+  else { behaviorText = 'low gain / uniform'; behaviorColor = styles.getPropertyValue('--c-success').trim(); }
+  const beh = document.getElementById('behavior');
+  beh.textContent = behaviorText;
+  beh.style.color = behaviorColor;
+}
+
+function setLogB(v) { document.getElementById('logb').value = v; render(); }
+
+function setPreset(name) {
+  if (name === 'sorted') logits = [3.0, 2.4, 1.8, 1.2, 0.6];
+  else if (name === 'twotied') logits = [2.5, 2.4, 1.0, 0.5, 0.2];
+  else if (name === 'flat') logits = [1.5, 1.4, 1.3, 1.2, 1.1];
+  render();
+}
+
+function shuffleInputs() {
+  logits = Array.from({length: 5}, () => Math.round((Math.random() * 4 + 0.3) * 10) / 10).sort((a, b) => b - a);
+  render();
+}
+
+document.getElementById('logb').addEventListener('input', render);
+render();
+</script>
+</body>
+</html>
