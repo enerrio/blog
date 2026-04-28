@@ -12,6 +12,7 @@ Each blog post has its own directory containing:
 ## Blog Posts
 
 ### 2026
+- **Apr 27** - [Hebbian Softmax](./hebbian-softmax/)
 - **Mar 22** - [The Lottery Ticket Hypothesis](./lottery-ticket-hypothesis/)
 - **Feb 22** - [Dispatch from the Frontier - Adventures in AI Engineering](./dispatch-from-frontier/)
 - **Feb 7** - [The Importance of pre-commit Hooks](./pre-commit)
