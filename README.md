@@ -18,16 +18,16 @@ Each blog post has its own directory containing:
 - **Feb 7** - [The Importance of pre-commit Hooks](./pre-commit)
 
 ### 2025
-- **29 Nov** - [Notes on ripgrep and fd](./ripgrep-fd-notes)
-- **20 Sep** - [Exploring Feature Stores with Apache Iceberg](./feature-stores-iceberg)
-- **21 Jul** - [Precision & Recall](./precision-recall)
-- **27 Apr** - [Social Media Bots](./social-media-bots)
-- **30 Mar** - [My Most Useful VSCode Shortcuts](./vscode-shortcuts)
-- **01 Feb** - [Measuring Sycophancy in Large Language Models](./measuring-sycophancy-llms)
+- **Nov 29** - [Notes on ripgrep and fd](./ripgrep-fd-notes)
+- **Sep 20** - [Exploring Feature Stores with Apache Iceberg](./feature-stores-iceberg)
+- **Jul 21** - [Precision & Recall](./precision-recall)
+- **Apr 27** - [Social Media Bots](./social-media-bots)
+- **Mar 30** - [My Most Useful VSCode Shortcuts](./vscode-shortcuts)
+- **Feb 1** - [Measuring Sycophancy in Large Language Models](./measuring-sycophancy-llms)
 
 ### 2024
-- **06 Dec** - [Beautiful Progress Bars with Rich](./progress-bars-rich)
-- **15 Nov** - [GPT-2 in Jax](./gpt2-jax)
-- **26 Oct** - [Equinox and Friends](./equinox-friends)
-- **11 Oct** - [Training a Neural Network with Jax](./training-neural-network-jax)
-- **05 Oct** - [Jax 101](./jax-101)
+- **Dec 6** - [Beautiful Progress Bars with Rich](./progress-bars-rich)
+- **Nov 15** - [GPT-2 in Jax](./gpt2-jax)
+- **Oct 26** - [Equinox and Friends](./equinox-friends)
+- **Oct 11** - [Training a Neural Network with Jax](./training-neural-network-jax)
+- **Oct 5** - [Jax 101](./jax-101)
