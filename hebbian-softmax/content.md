@@ -70,7 +70,7 @@ Check out the below visualization to see how manipulating the gain changes the s
 
 ![Softmax Gain Explorer](https://enerrio.github.io/blog/hebbian-softmax/resources/softmax-explorer.png)
 
-[Open the interactive Softmax Gain Explorer →](https://enerrio.github.io/blog/hebbian-softmax/resources/softmax-explorer.html)
+<a href="https://enerrio.github.io/blog/hebbian-softmax/resources/softmax-explorer.html" target="_blank">Open the interactive Softmax Gain Explorer</a>
 
 Try playing with the widget to see when the WTA regime takes hold.
 
